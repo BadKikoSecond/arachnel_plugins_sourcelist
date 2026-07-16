@@ -7,8 +7,8 @@ stages:
 
 workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
 
 generate-index:
   stage: index
@@ -33,10 +33,10 @@ generate-index:
         git push "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_COMMIT_REF_NAME}"
       fi
   rules:
-    # Avoid infinite loop: skip when the only change is the CI commit regenerating the index.
-    - if: $CI_COMMIT_MESSAGE =~ /^ci: regenerate plugins\.json/
+    # Avoid infinite loop: skip when the CI commit regenerates the index.
+    - if: '$CI_COMMIT_MESSAGE =~ /^ci: regenerate plugins\.json/'
       when: never
-    - if: $CI_COMMIT_BRANCH
+    - if: '$CI_COMMIT_BRANCH'
       changes:
         - "*.arach"
         - tools/generate_plugins_index.py

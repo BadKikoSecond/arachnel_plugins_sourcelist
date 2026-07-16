@@ -1,0 +1,43 @@
+# Regenerate plugins.json whenever *.arach packages change.
+# Requires: Settings → CI/CD → Job token permissions → allow push to this project
+# (or set CI variable GIT_PUSH_TOKEN with a Project Access Token that can write to the repo).
+
+stages:
+  - index
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+generate-index:
+  stage: index
+  image: python:3.12-alpine
+  before_script:
+    - apk add --no-cache git
+    - git config --global user.email "ci@gitlab.com"
+    - git config --global user.name "Arachnel CI"
+  script:
+    - python3 tools/generate_plugins_index.py
+    - |
+      if git diff --quiet -- plugins.json; then
+        echo "plugins.json unchanged"
+        exit 0
+      fi
+      git add plugins.json
+      git commit -m "ci: regenerate plugins.json from .arach packages"
+      # Prefer dedicated push token if set; otherwise CI job token.
+      if [ -n "${GIT_PUSH_TOKEN:-}" ]; then
+        git push "https://oauth2:${GIT_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_COMMIT_REF_NAME}"
+      else
+        git push "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_COMMIT_REF_NAME}"
+      fi
+  rules:
+    # Avoid infinite loop: skip when the only change is the CI commit regenerating the index.
+    - if: $CI_COMMIT_MESSAGE =~ /^ci: regenerate plugins\.json/
+      when: never
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - "*.arach"
+        - tools/generate_plugins_index.py
+        - .gitlab-ci.yml

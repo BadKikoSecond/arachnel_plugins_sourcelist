@@ -29,15 +29,13 @@ generate-index:
       git --no-pager diff -- plugins.json || true
       git add plugins.json
       git commit -m "ci: regenerate plugins.json from .arach packages"
-      # Prefer dedicated push token if set; otherwise CI job token
-      # (requires Settings → CI/CD → Job token permissions → allow push to this repository).
       if [ -n "${GIT_PUSH_TOKEN:-}" ]; then
         git push "https://oauth2:${GIT_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_COMMIT_REF_NAME}"
       else
         git push "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_COMMIT_REF_NAME}"
       fi
-      echo "Pushed updated plugins.json"  rules:
-    # Avoid infinite loop: skip when the CI commit regenerates the index.
+      echo "Pushed updated plugins.json"
+  rules:
     - if: '$CI_COMMIT_MESSAGE =~ /^ci: regenerate plugins\.json/'
       when: never
     - if: '$CI_COMMIT_BRANCH'

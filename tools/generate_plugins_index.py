@@ -78,9 +78,26 @@ def main() -> int:
         print(f"  + {plugin_id} {entry['version']} ({arach.name})")
 
     plugins.sort(key=lambda p: p["name"].lower())
+
+    previous_plugins = None
+    previous_updated = None
+    if OUT.exists():
+        try:
+            old = json.loads(OUT.read_text(encoding="utf-8"))
+            if isinstance(old, dict):
+                previous_plugins = old.get("plugins")
+                previous_updated = old.get("updatedAt")
+        except (OSError, json.JSONDecodeError):
+            pass
+
+    if previous_plugins == plugins and isinstance(previous_updated, str) and previous_updated:
+        updated_at = previous_updated
+    else:
+        updated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
     doc = {
         "schemaVersion": 1,
-        "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "updatedAt": updated_at,
         "plugins": plugins,
     }
     OUT.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

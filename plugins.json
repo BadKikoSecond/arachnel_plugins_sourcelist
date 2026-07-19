@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-19T13:28:45Z",
+  "updatedAt": "2026-07-19T17:28:59Z",
   "plugins": [
     {
       "id": "freetp",
       "name": "FreeTP",
       "description": "Торрент-каталог FreeTP — portable, Inno Setup, доп. фиксы и мод-паки",
-      "version": "1.0.14",
+      "version": "1.0.15",
       "apiVersion": 2,
       "iconName": "storefront",
       "file": "freetp.arach",
       "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/freetp.arach",
-      "sha256": "89553f065ca17df07b0c2c687e55f2db270807ec4d97c27a7d60b6aaebfaa221",
-      "size": 199872,
+      "sha256": "f63709dca4ed9ab986a6ff5457a0091c8068da13fd73b2221efc6bc0573ac2a5",
+      "size": 209855,
       "platforms": [
         "linux",
         "windows"
@@ -22,13 +22,13 @@
       "id": "steamidra",
       "name": "Steam",
       "description": "Steam depot installs via Arachnel Ryuu relay (manifests + fixes as addons)",
-      "version": "0.3.10",
+      "version": "0.3.11",
       "apiVersion": 3,
       "iconName": "stadia_controller",
       "file": "steam.arach",
       "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/steam.arach",
-      "sha256": "25610bc550055e931fd48a0ad8446ae8c315deeac4b44dafcb0cb8fdadf44d29",
-      "size": 76149523,
+      "sha256": "d46b41efca1c35d7e2f93b35da8b9fc3acad4705f1294aefebd89b6dd43c8792",
+      "size": 78514561,
       "platforms": [
         "linux",
         "windows"

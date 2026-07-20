@@ -111,6 +111,11 @@ def verify_ldd_linux(lib: Path, runtime_dirs: list[Path]) -> None:
         raise RuntimeError(f"{lib.name}: unresolved dependencies:\n" + "\n".join(missing))
 
 
+def is_host_symbol_load_error(message: str) -> bool:
+    lowered = message.lower()
+    return "undefined symbol" in lowered and "arachnel" in lowered
+
+
 def load_library_linux(lib: Path, runtime_dirs: list[Path]) -> None:
     env = os.environ.copy()
     ld_parts = [str(d) for d in runtime_dirs if d.is_dir()]
@@ -182,7 +187,16 @@ def verify_arach(
             check_exports_linux(lib)
             if not skip_load:
                 verify_ldd_linux(lib, runtime_dirs)
-                load_library_linux(lib, runtime_dirs)
+                try:
+                    load_library_linux(lib, runtime_dirs)
+                except RuntimeError as exc:
+                    if is_host_symbol_load_error(str(exc)):
+                        print(
+                            f"WARN {arach.name}: host Arachnel symbols not available in CI loader "
+                            f"({exc}); ldd/exports OK"
+                        )
+                    else:
+                        raise
         elif os_name == "windows":
             check_exports_windows(lib)
             if not skip_load:

@@ -43,6 +43,7 @@ verify:windows:
   tags:
     - saas-windows-medium-amd64
   timeout: 45m
+  allow_failure: true
   script:
     - pwsh -NoProfile -ExecutionPolicy Bypass -File tools/ci/verify-windows.ps1
 

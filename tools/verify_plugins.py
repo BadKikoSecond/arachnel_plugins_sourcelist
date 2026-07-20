@@ -112,25 +112,31 @@ def verify_ldd_linux(lib: Path, runtime_dirs: list[Path]) -> None:
 
 
 def load_library_linux(lib: Path, runtime_dirs: list[Path]) -> None:
-    import ctypes
-
     env = os.environ.copy()
     ld_parts = [str(d) for d in runtime_dirs if d.is_dir()]
     if ld_parts:
         prev = env.get("LD_LIBRARY_PATH", "")
         env["LD_LIBRARY_PATH"] = ":".join(ld_parts + ([prev] if prev else []))
 
-    old_env = os.environ.copy()
-    os.environ.update(env)
-    try:
-        handle = ctypes.CDLL(str(lib))
-    finally:
-        os.environ.clear()
-        os.environ.update(old_env)
-
-    for symbol in required_exports():
-        if not hasattr(handle, symbol):
-            raise RuntimeError(f"{lib.name}: symbol {symbol} not exported")
+    # dlopen in a child process so LD_LIBRARY_PATH is applied by the dynamic linker.
+    script = f"""
+import ctypes
+lib = {str(lib)!r}
+handle = ctypes.CDLL(lib)
+symbols = {required_exports()!r}
+missing = [s for s in symbols if not hasattr(handle, s)]
+if missing:
+    raise SystemExit("missing exports: " + ", ".join(missing))
+"""
+    proc = subprocess.run(
+        [sys.executable, "-c", script],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        msg = (proc.stderr or proc.stdout or "dlopen failed").strip()
+        raise RuntimeError(f"{lib.name}: {msg}")
 
 
 def load_library_windows(lib: Path, runtime_dirs: list[Path]) -> None:

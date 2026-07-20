@@ -6,7 +6,9 @@ cd "${ROOT}"
 
 ARACHNEL_VERSION="${ARACHNEL_VERSION:-0.1.17}"
 QT_VERSION="${QT_VERSION:-6.8.2}"
-QT_LINUX_ARCH="${QT_LINUX_ARCH:-linux_gcc_64}"
+# aqtinstall arch id vs output directory name differ (linux_gcc_64 -> .../gcc_64/).
+QT_AQT_ARCH="${QT_LINUX_ARCH:-linux_gcc_64}"
+QT_DIR_NAME="${QT_DIR_NAME:-gcc_64}"
 
 echo "=== Verify plugins on Linux (Arachnel v${ARACHNEL_VERSION}) ==="
 
@@ -40,9 +42,9 @@ if [[ ! -x "${AQT_VENV}/bin/aqt" ]]; then
   "${AQT_VENV}/bin/pip" install --upgrade pip aqtinstall
 fi
 QT_BASE="${WORKDIR}/qt"
-QT_PATH="${QT_BASE}/${QT_VERSION}/${QT_LINUX_ARCH}"
+QT_PATH="${QT_BASE}/${QT_VERSION}/${QT_DIR_NAME}"
 if [[ ! -f "${QT_PATH}/lib/libQt6Core.so" ]]; then
-  "${AQT_VENV}/bin/aqt" install-qt linux desktop "${QT_VERSION}" "${QT_LINUX_ARCH}" \
+  "${AQT_VENV}/bin/aqt" install-qt linux desktop "${QT_VERSION}" "${QT_AQT_ARCH}" \
     -m qtshadertools qtmultimedia \
     -O "${QT_BASE}"
 fi

@@ -1,18 +1,59 @@
 # Regenerate plugins.json whenever *.arach packages change.
+# Verify stage loads each plugin against the same Qt/Arachnel toolchain as releases.
+#
 # Requires: Settings → CI/CD → Job token permissions → allow push to this project
 # (or set CI variable GIT_PUSH_TOKEN with a Project Access Token that can write to the repo).
 
 stages:
+  - verify
   - index
+
+variables:
+  ARACHNEL_VERSION: "0.1.17"
+  QT_VERSION: "6.8.2"
 
 workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH'
 
+.verify-rules:
+  rules:
+    - if: '$CI_COMMIT_MESSAGE =~ /^ci: regenerate plugins\.json/'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+      changes:
+        - "*.arach"
+        - tools/**/*
+        - .gitlab-ci.yml
+
+verify:linux:
+  extends: .verify-rules
+  stage: verify
+  image: ubuntu:24.04
+  tags:
+    - vps
+  timeout: 45m
+  script:
+    - bash tools/ci/verify-linux.sh
+
+verify:windows:
+  extends: .verify-rules
+  stage: verify
+  tags:
+    - saas-windows-medium-amd64
+  timeout: 45m
+  script:
+    - pwsh -NoProfile -ExecutionPolicy Bypass -File tools/ci/verify-windows.ps1
+
 generate-index:
   stage: index
   image: python:3.12-alpine
+  needs:
+    - job: verify:linux
+      optional: true
+    - job: verify:windows
+      optional: true
   before_script:
     - apk add --no-cache git
     - git config --global user.email "ci@gitlab.com"

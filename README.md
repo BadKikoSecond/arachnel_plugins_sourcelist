@@ -31,6 +31,23 @@ git commit -m "Add my-plugin"
 git push
 ```
 
+## CI verify
+
+On every push that changes `*.arach` (or verify scripts), GitLab CI:
+
+1. **Linux (`verify:linux`)** — downloads Arachnel AppImage + Qt 6.8.2, extracts each `.arach`, runs `ldd` and loads the native library (same checks as the launcher).
+2. **Windows (`verify:windows`)** — loads each plugin DLL against the MSVC Qt runtime.
+
+Only packages that pass both stages should be committed to `main`. Tune `ARACHNEL_VERSION` / `QT_VERSION` in `.gitlab-ci.yml` when bumping launcher releases.
+
+Local check:
+
+```bash
+bash tools/ci/verify-linux.sh
+# Windows:
+pwsh -File tools/ci/verify-windows.ps1
+```
+
 ## CI note
 
 For auto-commit of `plugins.json`, enable job-token push:

@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-21T19:54:55Z",
+  "updatedAt": "2026-07-21T20:21:12Z",
   "plugins": [
     {
       "id": "freetp",
       "name": "FreeTP",
       "description": "Торрент-каталог FreeTP — portable, Inno Setup, доп. фиксы и мод-паки",
-      "version": "1.0.15",
+      "version": "1.0.16",
       "apiVersion": 2,
       "iconName": "storefront",
       "file": "freetp.arach",
       "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/freetp.arach",
-      "sha256": "f63709dca4ed9ab986a6ff5457a0091c8068da13fd73b2221efc6bc0573ac2a5",
-      "size": 209855,
+      "sha256": "5089acb6bbd7c1cf101e11bdb04e8e16cf0c03d97e64ca3e474d16c14b31631c",
+      "size": 205907,
       "platforms": [
         "linux",
         "windows"

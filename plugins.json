@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-23T01:20:51Z",
+  "updatedAt": "2026-07-23T11:20:32Z",
   "plugins": [
     {
       "id": "freetp",
@@ -22,13 +22,13 @@
       "id": "steamidra",
       "name": "Steam",
       "description": "Steam depot installs via Arachnel Ryuu relay (manifests + fixes as addons)",
-      "version": "0.3.32",
+      "version": "0.3.33",
       "apiVersion": 3,
       "iconName": "stadia_controller",
       "file": "steam.arach",
       "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/steam.arach",
-      "sha256": "2d0bdaf4bd83ab8e5410d72c72bb086de76c5b69ca72e05767cf0d04117e2865",
-      "size": 78646485,
+      "sha256": "e88d2ca935847339f8316713717fbe06cac002c322ad8da883e89c3491486181",
+      "size": 78771283,
       "platforms": [
         "linux",
         "windows"

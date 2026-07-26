@@ -4,13 +4,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${ROOT}"
 
-ARACHNEL_VERSION="${ARACHNEL_VERSION:-0.1.17}"
-QT_VERSION="${QT_VERSION:-6.8.2}"
+ARACHNEL_VERSION="${ARACHNEL_VERSION:-0.1.30b}"
+QT_VERSION="${QT_VERSION:-6.11.1}"
 # aqtinstall arch id vs output directory name differ (linux_gcc_64 -> .../gcc_64/).
 QT_AQT_ARCH="${QT_LINUX_ARCH:-linux_gcc_64}"
 QT_DIR_NAME="${QT_DIR_NAME:-gcc_64}"
 
-echo "=== Verify plugins on Linux (Arachnel v${ARACHNEL_VERSION}) ==="
+echo "=== Verify plugins on Linux (Arachnel v${ARACHNEL_VERSION}, Qt ${QT_VERSION}) ==="
 
 apt-get update -qq
 apt-get install -y --no-install-recommends \
@@ -49,9 +49,11 @@ if [[ ! -f "${QT_PATH}/lib/libQt6Core.so" ]]; then
     -O "${QT_BASE}"
 fi
 
+# Prefer aqt Qt over AppImage libs so plugins linked against Qt 6.11 resolve
+# Qt_6.11 symbols (AppImage may ship an older soname-compatible Core).
 RUNTIME_DIRS=(
-  "${WORKDIR}/squashfs-root/usr/lib"
   "${QT_PATH}/lib"
+  "${WORKDIR}/squashfs-root/usr/lib"
 )
 
 ARGS=(python3 "${ROOT}/tools/verify_plugins.py" --platform linux)

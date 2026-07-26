@@ -5,10 +5,10 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 Set-Location $Root
 
-$ArachnelVersion = if ($env:ARACHNEL_VERSION) { $env:ARACHNEL_VERSION } else { "0.1.17" }
-$QtVersion = if ($env:QT_VERSION) { $env:QT_VERSION } else { "6.8.2" }
+$ArachnelVersion = if ($env:ARACHNEL_VERSION) { $env:ARACHNEL_VERSION } else { "0.1.30b" }
+$QtVersion = if ($env:QT_VERSION) { $env:QT_VERSION } else { "6.11.1" }
 
-Write-Host "=== Verify plugins on Windows (Arachnel v$ArachnelVersion) ==="
+Write-Host "=== Verify plugins on Windows (Arachnel v$ArachnelVersion, Qt $QtVersion) ==="
 
 $packages = Get-ChildItem -Path $Root -Filter "*.arach" -File | Sort-Object Name
 if ($packages.Count -eq 0) {

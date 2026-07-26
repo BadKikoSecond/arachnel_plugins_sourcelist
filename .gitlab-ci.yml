@@ -9,8 +9,8 @@ stages:
   - index
 
 variables:
-  ARACHNEL_VERSION: "0.1.19"
-  QT_VERSION: "6.8.2"
+  ARACHNEL_VERSION: "0.1.30b"
+  QT_VERSION: "6.11.1"
 
 workflow:
   rules:

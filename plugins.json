@@ -29,8 +29,8 @@
       "repository": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra",
       "file": "steam.arach",
       "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/steam.arach",
-      "sha256": "3275b4d0f58ac61fe67ff316d58b08a546e52a4b327cba9a942214720c4c528a",
-      "size": 80225769,
+      "sha256": "437b1871836de10bc603acf33adf8fb28d6218e653fef7dc3f337d71d3c49414",
+      "size": 80229940,
       "platforms": [
         "linux",
         "windows"

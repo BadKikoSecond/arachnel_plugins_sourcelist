@@ -5,10 +5,10 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 Set-Location $Root
 
-$ArachnelVersion = if ($env:ARACHNEL_VERSION) { $env:ARACHNEL_VERSION } else { "0.1.30b" }
+$ArachnelVersion = if ($env:ARACHNEL_VERSION) { $env:ARACHNEL_VERSION } else { "0.1.34a" }
 $QtVersion = if ($env:QT_VERSION) { $env:QT_VERSION } else { "6.11.1" }
 
-Write-Host "=== Verify plugins on Windows (Arachnel v$ArachnelVersion, Qt $QtVersion) ==="
+Write-Host "=== Verify plugins on Windows (Arachnel v$ArachnelVersion, Qt $QtVersion MinGW) ==="
 
 $packages = Get-ChildItem -Path $Root -Filter "*.arach" -File | Sort-Object Name
 if ($packages.Count -eq 0) {
@@ -19,9 +19,9 @@ if ($packages.Count -eq 0) {
 $workDir = Join-Path $env:TEMP "arachnel-plugin-verify"
 New-Item -ItemType Directory -Force -Path $workDir | Out-Null
 
-# Portable-ish layout: extract Setup payload is heavy; use Qt runtime from aqt + MSVC redist on runner.
+# Match Arachnel release.yml: MinGW kit (plugins are MinGW DLLs).
 $qtRoot = Join-Path $workDir "qt"
-$qtPath = Join-Path $qtRoot "$QtVersion\msvc2022_64"
+$qtPath = Join-Path $qtRoot "$QtVersion\mingw_64"
 $qtBin = Join-Path $qtPath "bin"
 
 if (-not (Test-Path (Join-Path $qtBin "Qt6Core.dll"))) {
@@ -33,9 +33,16 @@ if (-not (Test-Path (Join-Path $qtBin "Qt6Core.dll"))) {
         python -m venv $venv
         & (Join-Path $venv "Scripts\pip.exe") install --upgrade pip aqtinstall
     }
-    & (Join-Path $venv "Scripts\aqt.exe") install-qt windows desktop $QtVersion win64_msvc2022_64 `
+    & (Join-Path $venv "Scripts\aqt.exe") install-qt windows desktop $QtVersion win64_mingw `
         -m qtshadertools qtmultimedia `
         -O $qtRoot
+}
+
+# Prefer runner-local MinGW Qt if present (same as plugin CI).
+$localQt = "D:\Qt\$QtVersion\mingw_64\bin"
+if (Test-Path (Join-Path $localQt "Qt6Core.dll")) {
+    $qtBin = $localQt
+    Write-Host "Using local Qt: $qtBin"
 }
 
 $runtimeDirs = @($qtBin)

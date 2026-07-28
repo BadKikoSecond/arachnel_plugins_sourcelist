@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${ROOT}"
 
-ARACHNEL_VERSION="${ARACHNEL_VERSION:-0.1.30b}"
+ARACHNEL_VERSION="${ARACHNEL_VERSION:-0.1.34a}"
 QT_VERSION="${QT_VERSION:-6.11.1}"
 # aqtinstall arch id vs output directory name differ (linux_gcc_64 -> .../gcc_64/).
 QT_AQT_ARCH="${QT_LINUX_ARCH:-linux_gcc_64}"

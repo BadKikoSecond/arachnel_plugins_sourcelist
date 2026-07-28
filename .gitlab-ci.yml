@@ -9,7 +9,7 @@ stages:
   - index
 
 variables:
-  ARACHNEL_VERSION: "0.1.30b"
+  ARACHNEL_VERSION: "0.1.34a"
   QT_VERSION: "6.11.1"
 
 workflow:
@@ -84,4 +84,5 @@ generate-index:
       changes:
         - "*.arach"
         - tools/generate_plugins_index.py
+        - tools/ingest_plugin_build.py
         - .gitlab-ci.yml

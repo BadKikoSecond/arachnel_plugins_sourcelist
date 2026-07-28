@@ -101,6 +101,7 @@ def build_from_arach(arach: Path, *, url: str | None = None) -> tuple[str, dict,
         "description": str(meta.get("description") or ""),
         "iconName": str(meta.get("iconName") or "extension"),
         "repository": str(meta.get("repository") or "").strip(),
+        "recommended": bool(meta.get("recommended")) or plugin_id == "steamidra",
     }
     return plugin_id, plugin_meta, build
 
@@ -155,6 +156,7 @@ def flatten_plugin(meta: dict, builds: list[dict]) -> dict:
         "name": meta.get("name") or meta["id"],
         "description": meta.get("description") or "",
         "iconName": meta.get("iconName") or "extension",
+        "recommended": bool(meta.get("recommended")) or meta["id"] == "steamidra",
         # Flat fields: safest for old PluginCatalogService (no builds[]).
         "version": str(flat_source.get("version") or latest.get("version") or "0.0.0"),
         "apiVersion": int(flat_source.get("apiVersion") or latest.get("apiVersion") or 0),
@@ -172,6 +174,13 @@ def flatten_plugin(meta: dict, builds: list[dict]) -> dict:
     if repo:
         entry["repository"] = repo
     return entry
+
+
+def plugin_sort_key(plugin_id: str, meta: dict) -> tuple:
+    """Steam / recommended first, then name."""
+    recommended = bool(meta.get("recommended")) or plugin_id == "steamidra"
+    steam_first = 0 if plugin_id == "steamidra" else 1
+    return (0 if recommended else 1, steam_first, (meta.get("name") or plugin_id).lower())
 
 
 def load_previous() -> dict:
@@ -208,6 +217,7 @@ def main() -> int:
             "description": row.get("description") or "",
             "iconName": row.get("iconName") or "extension",
             "repository": row.get("repository") or "",
+            "recommended": bool(row.get("recommended")) or pid == "steamidra",
         }
         old_builds = row.get("builds")
         if isinstance(old_builds, list) and old_builds:
@@ -244,7 +254,7 @@ def main() -> int:
 
     plugins = [
         flatten_plugin(by_id[pid], builds_by_id.get(pid, []))
-        for pid in sorted(by_id.keys(), key=lambda i: (by_id[i].get("name") or i).lower())
+        for pid in sorted(by_id.keys(), key=lambda i: plugin_sort_key(i, by_id[i]))
     ]
 
     previous_plugins = previous.get("plugins")

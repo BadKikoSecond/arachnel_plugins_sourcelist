@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-07-28T15:32:54Z",
+  "updatedAt": "2026-07-28T15:39:01Z",
   "plugins": [
     {
       "id": "freetp",
@@ -9,7 +9,7 @@
       "iconName": "storefront",
       "version": "1.0.18",
       "apiVersion": 2,
-      "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/freetp.arach",
+      "url": "https://gitlab.com/BadKiko/arachnel-plugin-freetp/-/package_files/325169875/download",
       "sha256": "d989bbb87ab05128254495a983ecde1da9759264bceba03fd224e7023ba69476",
       "size": 266275,
       "platforms": [
@@ -18,19 +18,32 @@
       ],
       "builds": [
         {
+          "version": "1.0.19",
+          "apiVersion": 4,
+          "minArachnel": "0.1.34",
+          "maxArachnel": "",
+          "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/freetp.arach",
+          "sha256": "39fb4e6ed74a8d459eb2bd56b411f3f82a000600c33967c74c849ddfc0590aaa",
+          "size": 4003297,
+          "platforms": [
+            "windows"
+          ],
+          "abiToken": "api=4",
+          "file": "freetp.arach"
+        },
+        {
           "version": "1.0.18",
           "apiVersion": 2,
           "minArachnel": "0.0.0",
           "maxArachnel": "",
-          "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/freetp.arach",
+          "url": "https://gitlab.com/BadKiko/arachnel-plugin-freetp/-/package_files/325169875/download",
           "sha256": "d989bbb87ab05128254495a983ecde1da9759264bceba03fd224e7023ba69476",
           "size": 266275,
           "platforms": [
             "linux",
             "windows"
           ],
-          "abiToken": "api=2",
-          "file": "freetp.arach"
+          "abiToken": "api=2"
         }
       ],
       "file": "freetp.arach",
@@ -43,7 +56,7 @@
       "iconName": "stadia_controller",
       "version": "0.4.6",
       "apiVersion": 3,
-      "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/steam.arach",
+      "url": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra/-/package_files/326465111/download",
       "sha256": "437b1871836de10bc603acf33adf8fb28d6218e653fef7dc3f337d71d3c49414",
       "size": 80229940,
       "platforms": [
@@ -52,19 +65,32 @@
       ],
       "builds": [
         {
+          "version": "0.4.7",
+          "apiVersion": 4,
+          "minArachnel": "0.1.34",
+          "maxArachnel": "",
+          "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/steam.arach",
+          "sha256": "3d24c877fa08995082e05ec40d66d261f2a10e596805cfde17ef87debffbe40a",
+          "size": 42365674,
+          "platforms": [
+            "windows"
+          ],
+          "abiToken": "api=4",
+          "file": "steam.arach"
+        },
+        {
           "version": "0.4.6",
           "apiVersion": 3,
           "minArachnel": "0.0.0",
           "maxArachnel": "",
-          "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/steam.arach",
+          "url": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra/-/package_files/326465111/download",
           "sha256": "437b1871836de10bc603acf33adf8fb28d6218e653fef7dc3f337d71d3c49414",
           "size": 80229940,
           "platforms": [
             "linux",
             "windows"
           ],
-          "abiToken": "api=3",
-          "file": "steam.arach"
+          "abiToken": "api=3"
         }
       ],
       "file": "steam.arach",

@@ -5,7 +5,7 @@
     {
       "id": "freetp",
       "name": "FreeTP",
-      "description": "Торрент-каталог FreeTP — portable, Inno Setup, доп. фиксы и мод-паки",
+      "description": "Russian online-fix.me alternative",
       "version": "1.0.18",
       "apiVersion": 2,
       "iconName": "storefront",
@@ -22,8 +22,8 @@
     {
       "id": "steamidra",
       "name": "Steam",
-      "description": "Steam depot installs via Arachnel Ryuu relay (self-contained C++, no Python)",
-      "version": "0.4.1",
+      "description": "Steam install via Arachnel Ryuu relay",
+      "version": "0.4.6",
       "apiVersion": 3,
       "iconName": "stadia_controller",
       "repository": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra",

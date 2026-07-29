@@ -1,10 +1,12 @@
-# Regenerate plugins.json whenever *.arach packages change.
-# Verify stage loads each plugin against the same Qt/Arachnel toolchain as releases.
+# Plugin packages land here via ingest (triggered from plugin release CI).
+# Local *.arach changes still run verify + regenerate index.
 #
-# Requires: Settings → CI/CD → Job token permissions → allow push to this project
-# (or set CI variable GIT_PUSH_TOKEN with a Project Access Token that can write to the repo).
+# Job token: Settings → CI/CD → Job token permissions
+# - allow inbound from arachnel-plugin-steamidra / arachnel-plugin-freetp
+# - allow Git push requests to this repository (CI_JOB_TOKEN)
 
 stages:
+  - ingest
   - verify
   - index
 
@@ -14,12 +16,63 @@ variables:
 
 workflow:
   rules:
+    # Avoid loops when ingest commits back to main.
+    - if: '$CI_COMMIT_MESSAGE =~ /^ci: ingest /'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ /^ci: regenerate plugins\.json/'
+      when: never
+    - if: '$INGEST_DOWNLOAD_URL'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH'
 
+# Triggered by plugin release pipelines (no cross-repo push token needed).
+ingest-plugin:
+  stage: ingest
+  image: python:3.12-slim
+  tags:
+    - linux
+  timeout: 15m
+  rules:
+    - if: '$INGEST_DOWNLOAD_URL'
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq curl ca-certificates git
+    - git config --global user.email "ci@gitlab.com"
+    - git config --global user.name "Arachnel Plugin CI"
+  script:
+    - |
+      set -euo pipefail
+      NAME="${INGEST_ARACH_NAME:-plugin.arach}"
+      NAME="$(basename "${NAME}")"
+      echo "Downloading ${NAME} from ${INGEST_DOWNLOAD_URL}"
+      curl --fail --location --retry 3 --retry-delay 2 \
+        --output "${NAME}" \
+        "${INGEST_DOWNLOAD_URL}"
+      test -s "${NAME}"
+      ARGS=(
+        --arach "${NAME}"
+        --url "${INGEST_DOWNLOAD_URL}"
+        --min-arachnel "${INGEST_MIN_ARACHNEL:-0.1.34}"
+        --abi-token "${INGEST_ABI_TOKEN:-develop}"
+      )
+      # Empty max clears upper bound in ingest_plugin_build.py
+      ARGS+=(--max-arachnel "${INGEST_MAX_ARACHNEL:-}")
+      python3 tools/ingest_plugin_build.py "${ARGS[@]}"
+      if git diff --quiet -- plugins.json; then
+        echo "plugins.json unchanged"
+        exit 0
+      fi
+      git add plugins.json
+      git commit -m "ci: ingest ${NAME} ${INGEST_TAG:-build} into plugins.json"
+      git push "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_DEFAULT_BRANCH}"
+      echo "Published ${NAME} to sourcelist"
+
 .verify-rules:
   rules:
+    - if: '$INGEST_DOWNLOAD_URL'
+      when: never
     - if: '$CI_COMMIT_MESSAGE =~ /^ci: regenerate plugins\.json/'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ /^ci: ingest /'
       when: never
     - if: '$CI_COMMIT_BRANCH'
       changes:
@@ -32,7 +85,7 @@ verify:linux:
   stage: verify
   image: ubuntu:24.04
   tags:
-    - vps
+    - linux
   timeout: 45m
   script:
     - bash tools/ci/verify-linux.sh
@@ -50,6 +103,8 @@ verify:windows:
 generate-index:
   stage: index
   image: python:3.12-alpine
+  tags:
+    - linux
   needs:
     - job: verify:linux
       optional: true
@@ -71,14 +126,14 @@ generate-index:
       git --no-pager diff -- plugins.json || true
       git add plugins.json
       git commit -m "ci: regenerate plugins.json from .arach packages"
-      if [ -n "${GIT_PUSH_TOKEN:-}" ]; then
-        git push "https://oauth2:${GIT_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_COMMIT_REF_NAME}"
-      else
-        git push "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_COMMIT_REF_NAME}"
-      fi
+      git push "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_COMMIT_REF_NAME}"
       echo "Pushed updated plugins.json"
   rules:
+    - if: '$INGEST_DOWNLOAD_URL'
+      when: never
     - if: '$CI_COMMIT_MESSAGE =~ /^ci: regenerate plugins\.json/'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ /^ci: ingest /'
       when: never
     - if: '$CI_COMMIT_BRANCH'
       changes:

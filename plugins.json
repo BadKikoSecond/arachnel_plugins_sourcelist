@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-07-28T22:31:06Z",
+  "updatedAt": "2026-07-29T11:26:33Z",
   "plugins": [
     {
       "id": "freetp",
@@ -71,13 +71,14 @@
           "apiVersion": 4,
           "minArachnel": "0.1.34",
           "maxArachnel": "",
-          "url": "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/steam.arach",
-          "sha256": "527944b40a41789275c73a33c05ff396bfb4791574a32caf27b0b0a22f8ec2b4",
-          "size": 43420239,
+          "url": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra/-/package_files/327897108/download",
+          "sha256": "461ab16148f4cf7a466a326ccd8f824685e1a1ab3d39a1a2f181bbcc0f8f6c21",
+          "size": 81139271,
           "platforms": [
+            "linux",
             "windows"
           ],
-          "abiToken": "api=4",
+          "abiToken": "develop",
           "file": "steam.arach"
         },
         {

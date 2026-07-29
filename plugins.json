@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-07-29T11:37:21Z",
+  "updatedAt": "2026-07-29T11:51:29Z",
   "plugins": [
     {
       "id": "freetp",
@@ -68,13 +68,13 @@
       ],
       "builds": [
         {
-          "version": "0.4.8",
+          "version": "0.4.9",
           "apiVersion": 4,
           "minArachnel": "0.1.34",
           "maxArachnel": "",
-          "url": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra/-/package_files/327897108/download",
-          "sha256": "461ab16148f4cf7a466a326ccd8f824685e1a1ab3d39a1a2f181bbcc0f8f6c21",
-          "size": 81139271,
+          "url": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra/-/package_files/327926174/download",
+          "sha256": "912271d480c8a1519e66e1763278c88fafcc92fcb10f1bd0bcfce6d37e97b535",
+          "size": 81135372,
           "platforms": [
             "linux",
             "windows"

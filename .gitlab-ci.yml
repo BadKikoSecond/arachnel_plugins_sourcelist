@@ -16,14 +16,14 @@ variables:
 
 workflow:
   rules:
+    # Ingest triggers must win even when HEAD commit is a previous ingest push.
+    - if: '$INGEST_DOWNLOAD_URL'
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
     # Avoid loops when ingest / index commits back to main.
     - if: '$CI_COMMIT_MESSAGE =~ /^ci: ingest /'
       when: never
     - if: '$CI_COMMIT_MESSAGE =~ /^ci: regenerate plugins\.json/'
       when: never
-    # Plugin release bridge (multi-project) or manual/API ingest.
-    - if: '$INGEST_DOWNLOAD_URL'
-    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
     - if: '$CI_PIPELINE_SOURCE == "api"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH'
@@ -66,8 +66,22 @@ ingest-plugin:
       fi
       git add plugins.json
       git commit -m "ci: ingest ${NAME} ${INGEST_TAG:-build} into plugins.json"
-      git push "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_DEFAULT_BRANCH}"
-      echo "Published ${NAME} to sourcelist"
+      # Concurrent plugin releases may race on main - rebase and retry push.
+      REMOTE="https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      for attempt in 1 2 3 4 5; do
+        git fetch "${REMOTE}" "${CI_DEFAULT_BRANCH}"
+        if git rebase "FETCH_HEAD"; then
+          if git push "${REMOTE}" "HEAD:${CI_DEFAULT_BRANCH}"; then
+            echo "Published ${NAME} to sourcelist"
+            exit 0
+          fi
+        fi
+        echo "push/rebase conflict (attempt ${attempt}), retrying..."
+        git rebase --abort 2>/dev/null || true
+        sleep $((attempt * 2))
+      done
+      echo "failed to push after retries" >&2
+      exit 1
 
 .verify-rules:
   rules:

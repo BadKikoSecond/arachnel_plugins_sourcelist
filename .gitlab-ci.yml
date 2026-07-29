@@ -57,27 +57,24 @@ ingest-plugin:
         --min-arachnel "${INGEST_MIN_ARACHNEL:-0.1.34}"
         --abi-token "${INGEST_ABI_TOKEN:-develop}"
       )
-      # Empty max clears upper bound in ingest_plugin_build.py
       ARGS+=(--max-arachnel "${INGEST_MAX_ARACHNEL:-}")
-      python3 tools/ingest_plugin_build.py "${ARGS[@]}"
-      if git diff --quiet -- plugins.json; then
-        echo "plugins.json unchanged"
-        exit 0
-      fi
-      git add plugins.json
-      git commit -m "ci: ingest ${NAME} ${INGEST_TAG:-build} into plugins.json"
-      # Concurrent plugin releases may race on main - rebase and retry push.
       REMOTE="https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      # Each attempt starts from latest main so concurrent plugin ingests can both land.
       for attempt in 1 2 3 4 5; do
         git fetch "${REMOTE}" "${CI_DEFAULT_BRANCH}"
-        if git rebase "FETCH_HEAD"; then
-          if git push "${REMOTE}" "HEAD:${CI_DEFAULT_BRANCH}"; then
-            echo "Published ${NAME} to sourcelist"
-            exit 0
-          fi
+        git checkout -B "${CI_DEFAULT_BRANCH}" FETCH_HEAD
+        python3 tools/ingest_plugin_build.py "${ARGS[@]}"
+        if git diff --quiet -- plugins.json; then
+          echo "plugins.json unchanged"
+          exit 0
         fi
-        echo "push/rebase conflict (attempt ${attempt}), retrying..."
-        git rebase --abort 2>/dev/null || true
+        git add plugins.json
+        git commit -m "ci: ingest ${NAME} ${INGEST_TAG:-build} into plugins.json"
+        if git push "${REMOTE}" "HEAD:${CI_DEFAULT_BRANCH}"; then
+          echo "Published ${NAME} to sourcelist"
+          exit 0
+        fi
+        echo "push rejected (attempt ${attempt}), retrying on newer main..."
         sleep $((attempt * 2))
       done
       echo "failed to push after retries" >&2

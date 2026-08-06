@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-08-06T03:03:16Z",
+  "updatedAt": "2026-08-06T04:48:16Z",
   "plugins": [
     {
       "id": "freetp",
@@ -19,13 +19,13 @@
       ],
       "builds": [
         {
-          "version": "1.0.19",
+          "version": "1.0.20",
           "apiVersion": 4,
           "minArachnel": "0.1.34",
           "maxArachnel": "",
-          "url": "https://gitlab.com/BadKiko/arachnel-plugin-freetp/-/package_files/327905373/download",
-          "sha256": "2496598ef04cb03874f45bf45fc124ac711a869029b5dd7aea7d2c710429d759",
-          "size": 346928,
+          "url": "https://gitlab.com/BadKiko/arachnel-plugin-freetp/-/package_files/331119666/download",
+          "sha256": "45b23113179aa290a8de9190343df1cdefc1cb0463560de23ac4000475d37b87",
+          "size": 359264,
           "platforms": [
             "linux",
             "windows"

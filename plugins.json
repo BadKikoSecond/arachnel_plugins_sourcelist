@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-08-25T23:39:59Z",
+  "updatedAt": "2026-10-08T21:19:09Z",
   "plugins": [
     {
       "id": "freetp",
@@ -49,7 +49,7 @@
         }
       ],
       "file": "freetp.arach",
-      "repository": "https://github.com/PetWork/arachnel-plugin-freetp"
+      "repository": "https://github.com/BadKikoSecond/arachnel_freetp_plugin"
     },
     {
       "id": "steamidra",

@@ -10,7 +10,7 @@
       "recommended": false,
       "version": "1.0.18",
       "apiVersion": 2,
-      "url": "https://gitlab.com/BadKiko/arachnel-plugin-freetp/-/package_files/325169875/download",
+      "url": "https://github.com/BadKikoSecond/arachnel_plugins_sourcelist/releases/download/legacy-freetp-1.0.18/freetp.arach",
       "sha256": "d989bbb87ab05128254495a983ecde1da9759264bceba03fd224e7023ba69476",
       "size": 266275,
       "platforms": [
@@ -38,7 +38,7 @@
           "apiVersion": 2,
           "minArachnel": "0.0.0",
           "maxArachnel": "",
-          "url": "https://gitlab.com/BadKiko/arachnel-plugin-freetp/-/package_files/325169875/download",
+          "url": "https://github.com/BadKikoSecond/arachnel_plugins_sourcelist/releases/download/legacy-freetp-1.0.18/freetp.arach",
           "sha256": "d989bbb87ab05128254495a983ecde1da9759264bceba03fd224e7023ba69476",
           "size": 266275,
           "platforms": [
@@ -59,7 +59,7 @@
       "recommended": true,
       "version": "0.4.6",
       "apiVersion": 3,
-      "url": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra/-/package_files/326465111/download",
+      "url": "https://github.com/BadKikoSecond/arachnel_plugins_sourcelist/releases/download/legacy-steamidra-0.4.6/steam.arach",
       "sha256": "437b1871836de10bc603acf33adf8fb28d6218e653fef7dc3f337d71d3c49414",
       "size": 80229940,
       "platforms": [
@@ -72,7 +72,7 @@
           "apiVersion": 4,
           "minArachnel": "0.1.34",
           "maxArachnel": "",
-          "url": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra/-/package_files/339537379/download",
+          "url": "https://github.com/BadKikoSecond/arachnel_plugins_sourcelist/releases/download/legacy-steamidra-0.6.18/steam.arach",
           "sha256": "9d8cb65322d0349ca9c1cb725c8e72717b0b9d7355a433904013a3c3fb00feb0",
           "size": 35527779,
           "platforms": [
@@ -87,7 +87,7 @@
           "apiVersion": 3,
           "minArachnel": "0.0.0",
           "maxArachnel": "",
-          "url": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra/-/package_files/326465111/download",
+          "url": "https://github.com/BadKikoSecond/arachnel_plugins_sourcelist/releases/download/legacy-steamidra-0.4.6/steam.arach",
           "sha256": "437b1871836de10bc603acf33adf8fb28d6218e653fef7dc3f337d71d3c49414",
           "size": 80229940,
           "platforms": [
@@ -98,7 +98,7 @@
         }
       ],
       "file": "steam.arach",
-      "repository": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra"
+      "repository": "https://github.com/BadKikoSecond/arachnel_plugin_steamidra"
     }
   ]
 }

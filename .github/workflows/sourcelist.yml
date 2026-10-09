@@ -160,7 +160,8 @@ jobs:
             git fetch origin "${BRANCH}"
             git reset -q --hard "origin/${BRANCH}"
             python3 tools/ingest_pending.py
-            if git diff --quiet -- plugins.json; then
+            # updatedAt alone changes on every ingest run; only real content changes get a commit.
+            if git diff --quiet -I'^  "updatedAt"' -- plugins.json; then
               echo "plugins.json unchanged"
               exit 0
             fi

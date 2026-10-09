@@ -121,7 +121,15 @@ jobs:
           key: verify-${{ hashFiles('tools/ci/verify-linux.sh') }}
 
       - name: Verify native libraries
-        run: bash tools/ci/verify-linux.sh $(find pending -name '*.arach' | sort)
+        run: |
+          set +e
+          bash tools/ci/verify-linux.sh $(find pending -name '*.arach' | sort) 2>&1 | tee verify.log
+          rc=${PIPESTATUS[0]}
+          if [[ ${rc} -ne 0 ]]; then
+            # Surface the tail as an annotation so the failure is readable from the checks API.
+            echo "::error title=verify failed (exit ${rc})::$(tail -c 3500 verify.log | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
+          fi
+          exit ${rc}
 
   publish:
     needs: [detect, verify]

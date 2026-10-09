@@ -20,7 +20,9 @@ ${SUDO} apt-get install -y --no-install-recommends \
 
 # Packages to check: arguments, otherwise every .arach in the repo root.
 if (($# > 0)); then
-  PACKAGES=("$@")
+  # Absolute paths: the script changes directory below.
+  PACKAGES=()
+  for pkg in "$@"; do PACKAGES+=("$(realpath "${pkg}")"); done
 else
   mapfile -t PACKAGES < <(find "${ROOT}" -maxdepth 1 -name '*.arach' -type f | sort)
 fi

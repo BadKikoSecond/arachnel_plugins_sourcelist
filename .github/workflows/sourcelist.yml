@@ -7,7 +7,8 @@
 #
 # No cross-repo secret is needed: this repo reads the plugins' public Releases. Pushes made with
 # GITHUB_TOKEN do not start further workflow runs, so there are no loops.
-# On ci/** branches the same chain runs as a dry run and commits to that branch instead of main.
+# Pushes to ci/** branches run the same chain against that branch; a push to main that touches the
+# workflow or tools re-checks the newest releases right away.
 
 name: Sources
 
@@ -41,7 +42,7 @@ on:
         default: 'build'
         type: string
   push:
-    branches: ['ci/**']
+    branches: ['ci/**', main]
     paths:
       - '.github/workflows/sourcelist.yml'
       - 'tools/**'

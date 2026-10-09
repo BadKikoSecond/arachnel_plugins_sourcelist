@@ -5,14 +5,14 @@ Public index of `.arach` plugin packages for the Arachnel launcher.
 **Index URL (used by the app):**
 
 ```
-https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main/plugins.json
+https://raw.githubusercontent.com/BadKikoSecond/arachnel_plugins_sourcelist/main/plugins.json
 ```
 
 ## Layout
 
 | Path | Purpose |
 |------|---------|
-| `*.arach` | Latest mirror packages (optional; history can live as GitLab package URLs) |
+| `*.arach` | Latest mirror packages (optional legacy mirrors; builds live in the plugins' GitHub Releases) |
 | `plugins.json` | Generated catalog schema **v2** (CI / local script) |
 | `tools/generate_plugins_index.py` | Builds `plugins.json` from packages + keeps `builds[]` history |
 | `tools/ingest_plugin_build.py` | Merge one release into `plugins.json` (used by plugin CI) |
@@ -32,26 +32,31 @@ git commit -m "Add my-plugin"
 git push
 ```
 
-## Auto-publish from plugin CI
+## Auto-publish from plugin releases
 
-Plugin release pipelines (steamidra / freetp) call `ingest_plugin_build.py` with the package download URL after tagging a release. Set CI variable **`SOURCELIST_PUSH_TOKEN`** on the plugin project (token with `write_repository` on this sourcelist).
+No secret is needed. [`.github/workflows/sourcelist.yml`](.github/workflows/sourcelist.yml) runs every 30 minutes and on demand:
+
+1. **detect** - lists the public Releases of the repos in [`tools/plugin_sources.json`](tools/plugin_sources.json) and downloads those that are not in `plugins.json` yet (stable, semver-tagged, containing the expected `.arach` asset);
+2. **verify** - loads each new package's native library against the Arachnel AppImage runtime;
+3. **publish** - merges the package into `plugins.json` with `tools/ingest_plugin_build.py` and pushes to `main`.
+
+A plugin release workflow can make this instant with a `repository_dispatch` (event type `plugin-release`, payload `url`, `arach`, `tag`, `min_arachnel`, `max_arachnel`, `abi_token`); it needs a token with *Contents: write* on this repo. By hand: **Actions -> Sources -> Run workflow** (tick *force_latest* to re-check the newest release, or give an explicit package URL).
+
+Manual ingest of a local package:
 
 ```bash
 python3 tools/ingest_plugin_build.py \
   --arach /path/plugin.arach \
-  --url https://gitlab.com/.../package_files/.../download \
+  --url https://github.com/<owner>/<repo>/releases/download/<tag>/plugin.arach \
   --min-arachnel 0.1.34 \
-  --abi-token v0.1.34a
+  --abi-token develop
 ```
 
 ## CI verify
 
-On every push that changes `*.arach` (or verify scripts), GitLab CI:
+[`sources.yml`](.github/workflows/sourcelist.yml) runs `tools/ci/verify-linux.sh` on every package before it is published: it downloads the Arachnel AppImage + matching Qt and loads the plugin library. `tools/ci/verify-windows.ps1` does the same with MinGW Qt on Windows (run it by hand when needed).
 
-1. **Linux (`verify:linux`)** — downloads Arachnel AppImage + matching Qt, extracts each `.arach`, loads the native library.
-2. **Windows (`verify:windows`)** — loads each plugin DLL against **MinGW** Qt (same kit as Arachnel releases).
-
-Tune `ARACHNEL_VERSION` / `QT_VERSION` in `.gitlab-ci.yml` when bumping launcher releases.
+Tune `ARACHNEL_VERSION` / `QT_VERSION` (defaults in `tools/ci/verify-linux.sh`) when bumping launcher releases.
 
 Local check:
 
@@ -90,7 +95,7 @@ Or set CI/CD variable `GIT_PUSH_TOKEN` (Project Access Token with `write_reposit
           "apiVersion": 4,
           "minArachnel": "0.1.34",
           "maxArachnel": "",
-          "url": "https://gitlab.com/…/package_files/…/download",
+          "url": "https://github.com/<owner>/<repo>/releases/download/<tag>/<plugin>.arach",
           "sha256": "…",
           "platforms": ["windows", "linux"],
           "abiToken": "v0.1.34a"

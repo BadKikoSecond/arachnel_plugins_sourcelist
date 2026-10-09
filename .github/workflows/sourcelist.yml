@@ -1,0 +1,168 @@
+# Keeps plugins.json in step with the plugins' GitHub Releases.
+#
+#   detect  - lists releases (tools/plugin_sources.json) that are not in plugins.json yet and
+#             downloads them; also runs for `repository_dispatch: plugin-release` and by hand
+#   verify  - loads each new package's native library against the Arachnel AppImage runtime
+#   publish - merges the verified packages into plugins.json (tools/ingest_plugin_build.py)
+#
+# No cross-repo secret is needed: this repo reads the plugins' public Releases. Pushes made with
+# GITHUB_TOKEN do not start further workflow runs, so there are no loops.
+# On ci/** branches the same chain runs as a dry run and commits to that branch instead of main.
+
+name: Sources
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  repository_dispatch:
+    types: [plugin-release]
+  workflow_dispatch:
+    inputs:
+      force_latest:
+        description: 'Re-run verify + ingest on the newest release of every plugin even if it is already indexed'
+        required: false
+        default: false
+        type: boolean
+      url:
+        description: 'Ingest this exact package URL instead of polling (optional)'
+        required: false
+        type: string
+      plugin_id:
+        description: 'Plugin id for the explicit URL (e.g. steamidra)'
+        required: false
+        type: string
+      arach_name:
+        description: 'File name for the explicit URL (e.g. steam.arach)'
+        required: false
+        type: string
+      tag:
+        description: 'Release tag for the explicit URL'
+        required: false
+        default: 'build'
+        type: string
+  push:
+    branches: ['ci/**']
+    paths:
+      - '.github/workflows/sourcelist.yml'
+      - 'tools/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sourcelist
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    runs-on: ubuntu-24.04
+    outputs:
+      pending: ${{ steps.find.outputs.pending }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: find
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          FORCE: ${{ github.event.inputs.force_latest }}
+          IN_URL: ${{ github.event.inputs.url }}
+          IN_ID: ${{ github.event.inputs.plugin_id }}
+          IN_FILE: ${{ github.event.inputs.arach_name }}
+          IN_TAG: ${{ github.event.inputs.tag }}
+          DISPATCH_URL: ${{ github.event.client_payload.url }}
+          DISPATCH_FILE: ${{ github.event.client_payload.arach }}
+          DISPATCH_TAG: ${{ github.event.client_payload.tag }}
+          DISPATCH_MIN: ${{ github.event.client_payload.min_arachnel }}
+          DISPATCH_MAX: ${{ github.event.client_payload.max_arachnel }}
+          DISPATCH_ABI: ${{ github.event.client_payload.abi_token }}
+        run: |
+          set -euo pipefail
+          ARGS=()
+          if [[ "${EVENT}" == "repository_dispatch" && -n "${DISPATCH_URL}" ]]; then
+            ARGS+=(--explicit-url "${DISPATCH_URL}" --explicit-file "${DISPATCH_FILE}" --explicit-tag "${DISPATCH_TAG:-build}")
+            [[ -z "${DISPATCH_MIN}" ]] || ARGS+=(--min-arachnel "${DISPATCH_MIN}")
+            ARGS+=(--max-arachnel "${DISPATCH_MAX}")
+            [[ -z "${DISPATCH_ABI}" ]] || ARGS+=(--abi-token "${DISPATCH_ABI}")
+            # id comes from the package's own plugin.json at ingest time; the name is only a label here.
+            ARGS+=(--explicit-id "$(basename "${DISPATCH_FILE}" .arach)")
+          elif [[ -n "${IN_URL}" ]]; then
+            ARGS+=(--explicit-url "${IN_URL}" --explicit-file "${IN_FILE}" --explicit-tag "${IN_TAG}" --explicit-id "${IN_ID:-$(basename "${IN_FILE}" .arach)}")
+          elif [[ "${FORCE}" == "true" || "${EVENT}" == "push" ]]; then
+            ARGS+=(--force-latest)
+          fi
+          python3 tools/sync_github_releases.py "${ARGS[@]}"
+          echo "pending=$(python3 -c 'import json; print(json.dumps(json.load(open("pending/pending.json"))))')" >> "${GITHUB_OUTPUT}"
+
+      - uses: actions/upload-artifact@v4
+        if: steps.find.outputs.pending != '[]'
+        with:
+          name: pending
+          path: pending
+          retention-days: 3
+
+  verify:
+    needs: detect
+    if: needs.detect.outputs.pending != '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: pending
+          path: pending
+
+      - name: Cache Arachnel runtime and Qt
+        uses: actions/cache@v4
+        with:
+          path: .ci-verify
+          key: verify-${{ hashFiles('tools/ci/verify-linux.sh') }}
+
+      - name: Verify native libraries
+        run: bash tools/ci/verify-linux.sh $(find pending -name '*.arach' | sort)
+
+  publish:
+    needs: [detect, verify]
+    if: needs.detect.outputs.pending != '[]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: pending
+          path: pending
+
+      - name: Ingest into plugins.json
+        run: python3 tools/ingest_pending.py
+
+      - name: Commit and push
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "Arachnel Plugin CI"
+          LABEL="$(python3 -c 'import json; print(", ".join(i["file"] + " " + i["tag"] for i in json.load(open("pending/pending.json"))))')"
+          # Concurrent publishers: every attempt starts from the newest tip and re-ingests.
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "${BRANCH}"
+            git reset -q --hard "origin/${BRANCH}"
+            python3 tools/ingest_pending.py
+            if git diff --quiet -- plugins.json; then
+              echo "plugins.json unchanged"
+              exit 0
+            fi
+            git add plugins.json
+            git commit -m "ci: ingest ${LABEL} into plugins.json"
+            if git push origin "HEAD:${BRANCH}"; then
+              echo "Published ${LABEL}"
+              exit 0
+            fi
+            echo "push rejected (attempt ${attempt}), retrying on the newest tip..."
+            sleep $((attempt * 2))
+          done
+          echo "failed to push after retries" >&2
+          exit 1

@@ -6,7 +6,7 @@ Used by plugin release CI to publish without hand-editing the index.
 Examples:
   python tools/ingest_plugin_build.py \\
     --arach /path/steam.arach \\
-    --url https://gitlab.com/.../steam.arach \\
+    --url https://github.com/.../releases/download/v0.6.22/steam.arach \\
     --min-arachnel 0.1.34 \\
     --abi-token v0.1.34a
 

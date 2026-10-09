@@ -14,11 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "plugins.json"
 
 # Public raw URL base for files on the default branch.
-RAW_BASE = "https://gitlab.com/BadKiko/arachnel-plugins-sourcelist/-/raw/main"
+RAW_BASE = "https://raw.githubusercontent.com/BadKikoSecond/arachnel_plugins_sourcelist/main"
 
 KNOWN_REPOS = {
-    "freetp": "https://github.com/PetWork/arachnel-plugin-freetp",
-    "steamidra": "https://gitlab.com/BadKiko/arachnel-plugin-steamidra",
+    "freetp": "https://github.com/BadKikoSecond/arachnel_freetp_plugin",
+    "steamidra": "https://github.com/BadKikoSecond/arachnel_plugin_steamidra",
 }
 
 

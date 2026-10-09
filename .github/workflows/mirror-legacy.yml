@@ -1,0 +1,57 @@
+# One-off: copy the plugin builds that are still hosted on GitLab package registries to GitHub
+# Releases of this repo and point plugins.json at them (same bytes; sha256 is checked).
+# Safe to re-run: releases that exist are left alone.
+
+name: Mirror legacy builds
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['ci/**']
+    paths:
+      - '.github/workflows/mirror-legacy.yml'
+      - 'tools/mirror_legacy_builds.py'
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BRANCH: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download and check the GitLab packages
+        run: python3 tools/mirror_legacy_builds.py stage
+
+      - name: Create releases
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > mirror/plan.tsv
+          import json
+          for m in json.load(open("mirror/manifest.json")):
+              print("\t".join([m["tag"], m["path"], m["title"]]))
+          PY
+          while IFS=$'\t' read -r tag path title; do
+            if gh release view "${tag}" >/dev/null 2>&1; then
+              echo "release ${tag} exists"
+            else
+              gh release create "${tag}" "${path}" --title "${title}" \
+                --notes "Mirror of a build that used to be served from the GitLab package registry. Same file, same sha256 as listed in plugins.json." \
+                --prerelease --target "${GITHUB_SHA}"
+            fi
+          done < mirror/plan.tsv
+
+      - name: Point plugins.json at the GitHub copies
+        run: |
+          set -euo pipefail
+          python3 tools/mirror_legacy_builds.py apply
+          if git diff --quiet -- plugins.json; then echo "nothing to change"; exit 0; fi
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "Arachnel Plugin CI"
+          git add plugins.json
+          git commit -m "ci: serve legacy builds from GitHub Releases instead of GitLab packages"
+          git push origin "HEAD:${BRANCH}"

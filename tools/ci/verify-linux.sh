@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${ROOT}"
 
-ARACHNEL_VERSION="${ARACHNEL_VERSION:-0.1.34a}"
+ARACHNEL_VERSION="${ARACHNEL_VERSION:-0.1.47}"
 QT_VERSION="${QT_VERSION:-6.11.1}"
 # aqtinstall arch id vs output directory name differ (linux_gcc_64 -> .../gcc_64/).
 QT_AQT_ARCH="${QT_LINUX_ARCH:-linux_gcc_64}"
@@ -12,17 +12,24 @@ QT_DIR_NAME="${QT_DIR_NAME:-gcc_64}"
 
 echo "=== Verify plugins on Linux (Arachnel v${ARACHNEL_VERSION}, Qt ${QT_VERSION}) ==="
 
-apt-get update -qq
-apt-get install -y --no-install-recommends \
+SUDO=""
+[[ "$(id -u)" -eq 0 ]] || SUDO="sudo"
+${SUDO} apt-get update -qq
+${SUDO} apt-get install -y --no-install-recommends \
   ca-certificates curl file python3 python3-venv binutils unzip
 
-mapfile -t PACKAGES < <(find "${ROOT}" -maxdepth 1 -name '*.arach' -type f | sort)
+# Packages to check: arguments, otherwise every .arach in the repo root.
+if (($# > 0)); then
+  PACKAGES=("$@")
+else
+  mapfile -t PACKAGES < <(find "${ROOT}" -maxdepth 1 -name '*.arach' -type f | sort)
+fi
 if ((${#PACKAGES[@]} == 0)); then
-  echo "No .arach packages in repo root"
+  echo "No .arach packages to verify"
   exit 0
 fi
 
-WORKDIR="${CI_PROJECT_DIR:-${ROOT}}/.ci-verify"
+WORKDIR="${VERIFY_WORKDIR:-${ROOT}/.ci-verify}"
 mkdir -p "${WORKDIR}"
 cd "${WORKDIR}"
 
